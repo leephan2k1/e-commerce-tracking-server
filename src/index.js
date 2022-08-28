@@ -13,7 +13,7 @@ fastify.register(cors);
     try {
         await fastify.ready();
 
-        const address = await fastify.listen({ port: PORT });
+        const address = await fastify.listen({ port: PORT, host: '0.0.0.0' });
         // eslint-disable-next-line no-console
         console.log(`Server listening at ${address}`);
     } catch (error) {
