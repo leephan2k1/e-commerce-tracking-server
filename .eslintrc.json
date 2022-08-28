@@ -29,7 +29,7 @@
         "no-console": [
             "error",
             {
-                "allow": ["time", "timeEnd"]
+                "allow": ["time", "timeEnd", "error"]
             }
         ]
     }

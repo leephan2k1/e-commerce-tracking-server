@@ -1,22 +1,23 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import { PORT } from './configs/index.js';
+import routes from './routes/index.js';
 
-const fastify = Fastify({
-    logger: true,
-});
+const fastify = Fastify();
 
-// Declare a route
-fastify.get('/', function (request, reply) {
-    reply.send({ hello: 'world' });
-});
+fastify.register(routes, { prefix: '/api/v1' });
 
 fastify.register(cors);
 
-// Run the server!
-fastify.listen({ port: 5555 }, function (err, address) {
-    if (err) {
-        fastify.log.error(err);
+(async function () {
+    try {
+        await fastify.ready();
+
+        const address = await fastify.listen({ port: PORT });
+        // eslint-disable-next-line no-console
+        console.log(`Server listening at ${address}`);
+    } catch (error) {
+        fastify.log.error(error);
         process.exit(1);
     }
-    // Server is now listening on ${address}
-});
+})();
