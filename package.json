@@ -8,6 +8,7 @@
     "scripts": {
         "dev": "nodemon src",
         "test": "echo \"Running tests... \n Done.\" && exit 0",
+        "start": "node src/index.js",
         "lint": "eslint .",
         "lint:fix": "eslint --fix ."
     },
