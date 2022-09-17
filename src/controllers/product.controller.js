@@ -20,13 +20,80 @@ export async function productSearch(req, rep) {
             case 'lazada':
                 products = await lazadaSearch(keyword, page);
                 break;
-        }
 
-        // if (!products) {
-        //     return rep.status(400).send({
-        //         status: 'error',
-        //     });
-        // }
+            case 'tiki-shopee':
+            case 'shopee-tiki':
+                // eslint-disable-next-line no-case-declarations
+                const [_productsTiki, _productsShopee] =
+                    // eslint-disable-next-line node/no-unsupported-features/es-builtins
+                    await Promise.allSettled([
+                        tikiSearch(keyword, page).then((result) => result),
+                        shopeeSearch(keyword, page).then((result) => result),
+                    ]);
+
+                return rep.status(200).send({
+                    status: 'success',
+                    products: {
+                        tiki: _productsTiki?.value,
+                        shopee: _productsShopee?.value,
+                    },
+                });
+
+            case 'tiki-lazada':
+            case 'lazada-tiki':
+                // eslint-disable-next-line no-case-declarations
+                const [___productsTiki, ___productLazada] =
+                    // eslint-disable-next-line node/no-unsupported-features/es-builtins
+                    await Promise.allSettled([
+                        tikiSearch(keyword, page).then((result) => result),
+                        lazadaSearch(keyword, page).then((result) => result),
+                    ]);
+
+                return rep.status(200).send({
+                    status: 'success',
+                    products: {
+                        tiki: ___productsTiki?.value,
+                        lazada: ___productLazada?.value,
+                    },
+                });
+
+            case 'shopee-lazada':
+            case 'lazada-shopee':
+                // eslint-disable-next-line no-case-declarations
+                const [__productsShopee, __productLazada] =
+                    // eslint-disable-next-line node/no-unsupported-features/es-builtins
+                    await Promise.allSettled([
+                        shopeeSearch(keyword, page).then((result) => result),
+                        lazadaSearch(keyword, page).then((result) => result),
+                    ]);
+
+                return rep.status(200).send({
+                    status: 'success',
+                    products: {
+                        shopee: __productsShopee?.value,
+                        lazada: __productLazada?.value,
+                    },
+                });
+
+            case 'all':
+                // eslint-disable-next-line no-case-declarations
+                const [productsTiki, productsShopee, productLazada] =
+                    // eslint-disable-next-line node/no-unsupported-features/es-builtins
+                    await Promise.allSettled([
+                        tikiSearch(keyword, page).then((result) => result),
+                        shopeeSearch(keyword, page).then((result) => result),
+                        lazadaSearch(keyword, page).then((result) => result),
+                    ]);
+
+                return rep.status(200).send({
+                    status: 'success',
+                    products: {
+                        tiki: productsTiki?.value,
+                        shopee: productsShopee?.value,
+                        lazada: productLazada?.value,
+                    },
+                });
+        }
 
         return rep.status(200).send({
             status: 'success',
@@ -118,6 +185,17 @@ export async function productSearch(req, rep) {
         // );
 
         // await browser.close();
+    } catch (error) {
+        rep.status(400).send({
+            status: 'error',
+            message: error,
+        });
+    }
+}
+
+export async function productDetails(req, rep) {
+    try {
+        console.error('test');
     } catch (error) {
         rep.status(400).send({
             status: 'error',
