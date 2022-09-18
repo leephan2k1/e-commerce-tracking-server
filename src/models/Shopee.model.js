@@ -3,16 +3,16 @@ import { handlePriceShopee } from '../utils/index.js';
 
 const axiosClient = getAxiosClient(SHOPEE_URL, SHOPEE_URL);
 
-export async function search(keyword, pageParam) {
+export async function search(keyword, pageParam, sort) {
     const paginate = --pageParam * 60;
 
     try {
         const { data } = await axiosClient.get(
             `https://shopee.vn/api/v4/search/search_items?by=relevancy&keyword=${encodeURIComponent(
                 keyword,
-            )}&limit=60&newest=${
-                paginate !== 0 ? paginate : ''
-            }&order=desc&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2`,
+            )}&limit=60&newest=${paginate !== 0 ? paginate : ''}&order=${
+                sort ? sort : 'desc'
+            }&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2`,
         );
 
         if (Array.isArray(data?.items)) {

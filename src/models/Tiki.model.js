@@ -2,12 +2,12 @@ import axios from 'axios';
 import { TIKI_URL } from '../configs/index.js';
 import { handlePriceNumber } from '../utils/index.js';
 
-export async function search(keyword, pageNumber) {
+export async function search(keyword, pageNumber, sort) {
     try {
         const { data } = await axios.get(
             `https://tiki.vn/api/v2/products?limit=48&aggregations=2&q=${encodeURIComponent(
                 keyword,
-            )}&page=${pageNumber}`,
+            )}&page=${pageNumber}${sort ? `&sort=price,${sort}` : ''}`,
         );
 
         if (Array.isArray(data?.data)) {

@@ -4,21 +4,21 @@ import { search as lazadaSearch } from '../models/Lazada.model.js';
 
 export async function productSearch(req, rep) {
     try {
-        const { keyword, market, page } = req.query;
+        const { keyword, market, page, sort } = req.query;
 
         let products;
 
         switch (market) {
             case 'tiki':
-                products = await tikiSearch(keyword, page);
+                products = await tikiSearch(keyword, page, sort);
                 break;
 
             case 'shopee':
-                products = await shopeeSearch(keyword, page);
+                products = await shopeeSearch(keyword, page, sort);
                 break;
 
             case 'lazada':
-                products = await lazadaSearch(keyword, page);
+                products = await lazadaSearch(keyword, page, sort);
                 break;
 
             case 'tiki-shopee':
@@ -27,8 +27,12 @@ export async function productSearch(req, rep) {
                 const [_productsTiki, _productsShopee] =
                     // eslint-disable-next-line node/no-unsupported-features/es-builtins
                     await Promise.allSettled([
-                        tikiSearch(keyword, page).then((result) => result),
-                        shopeeSearch(keyword, page).then((result) => result),
+                        tikiSearch(keyword, page, sort).then(
+                            (result) => result,
+                        ),
+                        shopeeSearch(keyword, page, sort).then(
+                            (result) => result,
+                        ),
                     ]);
 
                 return rep.status(200).send({
@@ -45,8 +49,12 @@ export async function productSearch(req, rep) {
                 const [___productsTiki, ___productLazada] =
                     // eslint-disable-next-line node/no-unsupported-features/es-builtins
                     await Promise.allSettled([
-                        tikiSearch(keyword, page).then((result) => result),
-                        lazadaSearch(keyword, page).then((result) => result),
+                        tikiSearch(keyword, page, sort).then(
+                            (result) => result,
+                        ),
+                        lazadaSearch(keyword, page, sort).then(
+                            (result) => result,
+                        ),
                     ]);
 
                 return rep.status(200).send({
@@ -63,8 +71,12 @@ export async function productSearch(req, rep) {
                 const [__productsShopee, __productLazada] =
                     // eslint-disable-next-line node/no-unsupported-features/es-builtins
                     await Promise.allSettled([
-                        shopeeSearch(keyword, page).then((result) => result),
-                        lazadaSearch(keyword, page).then((result) => result),
+                        shopeeSearch(keyword, page, sort).then(
+                            (result) => result,
+                        ),
+                        lazadaSearch(keyword, page, sort).then(
+                            (result) => result,
+                        ),
                     ]);
 
                 return rep.status(200).send({
@@ -80,9 +92,15 @@ export async function productSearch(req, rep) {
                 const [productsTiki, productsShopee, productLazada] =
                     // eslint-disable-next-line node/no-unsupported-features/es-builtins
                     await Promise.allSettled([
-                        tikiSearch(keyword, page).then((result) => result),
-                        shopeeSearch(keyword, page).then((result) => result),
-                        lazadaSearch(keyword, page).then((result) => result),
+                        tikiSearch(keyword, page, sort).then(
+                            (result) => result,
+                        ),
+                        shopeeSearch(keyword, page, sort).then(
+                            (result) => result,
+                        ),
+                        lazadaSearch(keyword, page, sort).then(
+                            (result) => result,
+                        ),
                     ]);
 
                 return rep.status(200).send({

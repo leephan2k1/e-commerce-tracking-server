@@ -4,12 +4,12 @@ import { unshiftProtocol } from '../utils/index.js';
 
 const axiosClient = getAxiosClient(LAZADA_URL, LAZADA_URL);
 
-export async function search(keyword, page) {
+export async function search(keyword, page, sort) {
     try {
         const { data } = await axiosClient.get(
             `https://www.lazada.vn/catalog/?_keyori=ss&ajax=true&from=input&isFirstRequest=true&page=${page}&q=${encodeURIComponent(
                 keyword,
-            )}`,
+            )}${sort ? `&sort=price${sort}` : ''}`,
         );
 
         if (data?.mods && Array.isArray(data?.mods.listItems)) {
