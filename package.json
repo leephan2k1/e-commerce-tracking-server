@@ -19,6 +19,7 @@
         "dotenv": "^16.0.1",
         "fastify": "^4.5.2",
         "fastify-plugin": "^4.2.0",
+        "mongoose": "^6.6.1",
         "node-html-parser": "^5.4.2-0",
         "puppeteer": "^16.2.0",
         "slug": "^6.0.0"
