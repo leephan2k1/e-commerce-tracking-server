@@ -1,9 +1,14 @@
-import { getAxiosClient, SHOPEE_URL } from '../configs/index.js';
-import { handlePriceShopee } from '../utils/index.js';
-
-const axiosClient = getAxiosClient(SHOPEE_URL, SHOPEE_URL);
+import {
+    getAxiosClient,
+    SHOPEE_URL,
+    BC_URL,
+    BC_API,
+} from '../configs/index.js';
+import { handlePriceShopee, handlePriceNumber } from '../utils/index.js';
+import slug from 'slug';
 
 export async function search(keyword, pageParam, sort) {
+    const axiosClient = getAxiosClient(SHOPEE_URL, SHOPEE_URL);
     const paginate = --pageParam * 60;
 
     try {
@@ -68,7 +73,58 @@ export async function search(keyword, pageParam, sort) {
             return products ? products : [];
         }
     } catch (error) {
-        console.error('error:: ', error);
-        return null;
+        const axiosClient = getAxiosClient(BC_URL, BC_URL);
+
+        try {
+            const { data } = await axiosClient.post(
+                `${BC_API}/search/keyword`,
+                {
+                    limit: 24,
+                    page: pageParam,
+                    query_search_filter_sort: {
+                        lst_platform_id: ['1'],
+                        sort: 'google_queries.pos__asc',
+                    },
+                    slug: slug(keyword),
+                },
+            );
+
+            const listResult = data?.data?.lst_product;
+
+            if (Array.isArray(listResult)) {
+                const products = listResult.map((product) => {
+                    const img = product?.url_thumbnail;
+
+                    const name = String(product?.name).trim();
+
+                    const price = handlePriceNumber(Number(product?.price));
+
+                    const totalSales = product?.rating_count;
+
+                    const productIds = String(product?.product_base_id)
+                        .trim()
+                        .split('__');
+
+                    const link = `${SHOPEE_URL}/${String(name)
+                        .replace(/\s/g, '-')
+                        .replace(/\[|\]/g, '-')
+                        .replace('%', '')}-i.${productIds[2]}.${productIds[1]}`;
+
+                    return {
+                        name,
+                        img,
+                        price,
+                        totalSales,
+                        link,
+                    };
+                });
+
+                return products ? products : [];
+            }
+
+            return null;
+        } catch (error) {
+            return null;
+        }
     }
 }

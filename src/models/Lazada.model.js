@@ -1,6 +1,12 @@
-import { getAxiosClient } from '../configs/index.js';
-import { LAZADA_URL } from '../configs/index.js';
+import {
+    getAxiosClient,
+    LAZADA_URL,
+    BC_URL,
+    BC_API,
+} from '../configs/index.js';
 import { unshiftProtocol } from '../utils/index.js';
+import { handlePriceNumber } from '../utils/index.js';
+import slug from 'slug';
 
 const axiosClient = getAxiosClient(LAZADA_URL, LAZADA_URL);
 
@@ -33,9 +39,62 @@ export async function search(keyword, page, sort) {
             }, []);
 
             return product ? product : [];
+        } else {
+            throw new Error();
         }
     } catch (error) {
-        console.error('error:: ', error);
-        return null;
+        const axiosClient = getAxiosClient(BC_URL, BC_URL);
+
+        try {
+            const { data } = await axiosClient.post(
+                `${BC_API}/search/keyword`,
+                {
+                    limit: 24,
+                    page: --page,
+                    query_search_filter_sort: {
+                        lst_platform_id: ['2'],
+                        sort: 'google_queries.pos__asc',
+                    },
+                    slug: slug(keyword),
+                },
+            );
+
+            const listResult = data?.data?.lst_product;
+
+            if (Array.isArray(listResult)) {
+                const products = listResult.map((product) => {
+                    const img = product?.url_thumbnail;
+
+                    const name = String(product?.name).trim();
+
+                    const price = handlePriceNumber(Number(product?.price));
+
+                    const totalSales = product?.rating_count;
+
+                    const productIds = String(product?.product_base_id)
+                        .trim()
+                        .split('__');
+
+                    const link = `${LAZADA_URL}/products/${String(slug(name))
+                        .replace(/\s/g, '-')
+                        .replace(/\[|\]/g, '-')
+                        .replace('%', '')}-i${productIds[1]}-s${
+                        productIds[1]
+                    }.html`;
+
+                    return {
+                        img,
+                        name,
+                        price,
+                        totalSales,
+                        link,
+                    };
+                });
+
+                return products ? products : [];
+            }
+        } catch (error) {
+            return null;
+        }
     }
 }
