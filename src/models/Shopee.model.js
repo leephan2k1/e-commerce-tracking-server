@@ -6,9 +6,11 @@ import {
 } from '../configs/index.js';
 import { handlePriceShopee, handlePriceNumber } from '../utils/index.js';
 import slug from 'slug';
+import { cluster } from 'radash';
+
+const axiosClient = getAxiosClient(SHOPEE_URL, SHOPEE_URL);
 
 export async function search(keyword, pageParam, sort) {
-    const axiosClient = getAxiosClient(SHOPEE_URL, SHOPEE_URL);
     const paginate = --pageParam * 60;
 
     try {
@@ -126,5 +128,93 @@ export async function search(keyword, pageParam, sort) {
         } catch (error) {
             return null;
         }
+    }
+}
+
+export async function getFlashSale(page, limit) {
+    try {
+        const { data: dataId } = await axiosClient.get(
+            `https://shopee.vn/api/v4/flash_sale/get_all_itemids`,
+        );
+
+        const idCollection = dataId?.data?.item_brief_list.map(
+            (item) => item?.itemid,
+        );
+
+        const paginate = cluster(idCollection, limit);
+
+        const { data } = await axiosClient.post(
+            `https://shopee.vn/api/v4/flash_sale/flash_sale_batch_get_items`,
+            {
+                itemids: paginate[page],
+                limit: paginate[page]?.length,
+                with_dp_items: true,
+            },
+        );
+
+        if (!data?.data && !data.data?.items?.length) throw new Error();
+
+        if (Array.isArray(data.data?.items)) {
+            const products = data.data?.items.reduce((result, prod) => {
+                const name = prod?.name;
+
+                const img = `https://cf.shopee.vn/file/${prod?.image}_tn`;
+
+                const price = prod?.price;
+
+                const priceBeforeDiscount = prod?.price_before_discount;
+
+                const discountPercent = prod?.discount;
+
+                const totalSales = prod?.flash_sale_stock - prod?.stock;
+
+                const link = `${SHOPEE_URL}/${String(name)
+                    .replace(/\s/g, '-')
+                    .replace(/\[|\]/g, '-')
+                    .replace('%', '')}-i.${prod?.shopid}.${prod?.itemid}`;
+
+                const qtyRemainPercent = totalSales;
+
+                // eslint-disable-next-line camelcase
+                const product_base_id = `1__${prod?.itemid}__${prod?.shopid}`;
+
+                if (
+                    name &&
+                    img &&
+                    price &&
+                    priceBeforeDiscount &&
+                    discountPercent &&
+                    totalSales &&
+                    link &&
+                    qtyRemainPercent &&
+                    // eslint-disable-next-line camelcase
+                    product_base_id
+                ) {
+                    result.push({
+                        name,
+                        img,
+                        price,
+                        priceBeforeDiscount,
+                        discountPercent,
+                        totalSales,
+                        link,
+                        qtyRemainPercent,
+                        // eslint-disable-next-line camelcase
+                        product_base_id,
+                        market: 'shopee',
+                    });
+                }
+
+                return result;
+            }, []);
+
+            return products ? products : null;
+        }
+
+        return null;
+    } catch (error) {
+        console.error('error:: ', error);
+
+        return null;
     }
 }

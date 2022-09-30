@@ -1,12 +1,44 @@
-import { search as shopeeSearch } from '../models/Shopee.model.js';
-import { search as tikiSearch } from '../models/Tiki.model.js';
 import { search as lazadaSearch } from '../models/Lazada.model.js';
+import {
+    search as shopeeSearch,
+    getFlashSale as shopeeGetFlashSale,
+} from '../models/Shopee.model.js';
+import {
+    getFlashSale as tikiGetFlashSale,
+    search as tikiSearch,
+} from '../models/Tiki.model.js';
 
 export async function productSearch(req, rep) {
     try {
-        const { keyword, market, page, sort } = req.query;
+        const { keyword, market, page, sort, limit, searchType } = req.query;
 
         let products;
+
+        if (searchType === 'flashSale') {
+            switch (market) {
+                case 'tiki':
+                    products = await tikiGetFlashSale(page, limit);
+                    if (!products) throw new Error();
+
+                    // break section search keyword below
+                    return rep.status(200).send({
+                        status: 'success',
+                        products,
+                    });
+                case 'shopee':
+                    products = await shopeeGetFlashSale(page, limit);
+                    // break section search keyword below
+                    return rep.status(200).send({
+                        status: 'success',
+                        products,
+                    });
+                default:
+                    rep.status(404).send({
+                        status: 'error',
+                        message: 'not found',
+                    });
+            }
+        }
 
         switch (market) {
             case 'tiki':
@@ -204,17 +236,8 @@ export async function productSearch(req, rep) {
 
         // await browser.close();
     } catch (error) {
-        rep.status(400).send({
-            status: 'error',
-            message: error,
-        });
-    }
-}
+        console.error('SEARCH ERROR:: ', error);
 
-export async function productDetails(req, rep) {
-    try {
-        console.error('test');
-    } catch (error) {
         rep.status(400).send({
             status: 'error',
             message: error,
