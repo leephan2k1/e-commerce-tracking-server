@@ -6,7 +6,7 @@ import {
 } from '../configs/index.js';
 import { handlePriceShopee, handlePriceNumber } from '../utils/index.js';
 import slug from 'slug';
-import { cluster } from 'radash';
+import { cluster, isNumber } from 'radash';
 
 const axiosClient = getAxiosClient(SHOPEE_URL, SHOPEE_URL);
 
@@ -160,11 +160,14 @@ export async function getFlashSale(page, limit) {
 
                 const img = `https://cf.shopee.vn/file/${prod?.image}_tn`;
 
-                const price = prod?.price;
+                const price = Number(prod?.price) / 100000;
 
-                const priceBeforeDiscount = prod?.price_before_discount;
+                const priceBeforeDiscount =
+                    Number(prod?.price_before_discount) / 100000;
 
-                const discountPercent = prod?.discount;
+                const discountPercent = Number(
+                    String(prod?.discount).replace('%', ''),
+                );
 
                 const totalSales = prod?.flash_sale_stock - prod?.stock;
 
@@ -183,10 +186,10 @@ export async function getFlashSale(page, limit) {
                     img &&
                     price &&
                     priceBeforeDiscount &&
-                    discountPercent &&
-                    totalSales &&
+                    isNumber(discountPercent) &&
+                    isNumber(totalSales) &&
                     link &&
-                    qtyRemainPercent &&
+                    isNumber(qtyRemainPercent) &&
                     // eslint-disable-next-line camelcase
                     product_base_id
                 ) {
