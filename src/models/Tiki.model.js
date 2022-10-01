@@ -64,7 +64,7 @@ export async function getFlashSale(page, limit) {
 
                 const totalSales = prod?.product?.quantity_sold?.text;
 
-                const link = prod?.product?.url_path;
+                const link = `${TIKI_URL}/${prod?.product?.url_path}`;
 
                 const qtyRemainPercent = prod?.progress?.percent;
 
