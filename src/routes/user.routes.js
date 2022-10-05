@@ -1,10 +1,27 @@
 import {
     saveFavoriteProduct,
     deleteFavoriteProduct,
+    getFavoriteInfo,
 } from '../controllers/user.controller.js';
 import { validateUserId } from '../middlewares/validateUser.js';
 
 const productRoutes = [
+    {
+        url: '/users/:userId/get-favorite',
+        method: 'POST',
+        schema: {
+            body: {
+                type: 'object',
+                required: ['link'],
+                properties: {
+                    link: { type: 'string' },
+                },
+            },
+        },
+        preHandler: [validateUserId],
+        handler: getFavoriteInfo,
+    },
+
     {
         url: '/users/:userId/favorite',
         method: 'POST',

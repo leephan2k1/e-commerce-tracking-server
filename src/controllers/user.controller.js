@@ -1,6 +1,42 @@
 import Product from '../models/Product.model.js';
 import User from '../models/User.model.js';
 
+export async function getFavoriteInfo(req, rep) {
+    try {
+        const { link } = req.body;
+        const { userId } = req.params;
+
+        const user = await User.findById(userId);
+
+        const product = await Product.findOne({ link });
+
+        if (!product) {
+            return rep.status(404).send({
+                status: 'product not found',
+            });
+        }
+
+        // eslint-disable-next-line camelcase
+        const { favorite_products } = user;
+
+        // eslint-disable-next-line camelcase
+        const check = favorite_products?.some(
+            (id) => String(id) === String(product._id),
+        );
+
+        rep.status(200).send({
+            status: 'success',
+            isSaved: check,
+        });
+    } catch (error) {
+        console.error('saveFavoriteProduct error: ', error);
+
+        rep.status(500).send({
+            message: 'internal server error',
+        });
+    }
+}
+
 export async function saveFavoriteProduct(req, rep) {
     try {
         const { userId } = req.params;
