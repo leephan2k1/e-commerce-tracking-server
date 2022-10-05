@@ -27,3 +27,34 @@ export async function saveFavoriteProduct(req, rep) {
         });
     }
 }
+
+export async function deleteFavoriteProduct(req, rep) {
+    try {
+        const { userId } = req.params;
+        const { link } = req.body;
+
+        const product = await Product.findOne({ link });
+
+        if (!product) {
+            return rep.status(404).send({
+                status: 'error',
+                message: 'product not found',
+            });
+        }
+
+        await User.updateOne(
+            { _id: userId },
+            { $pull: { favorite_products: product._id } },
+        );
+
+        rep.status(200).send({
+            status: 'success',
+        });
+    } catch (error) {
+        console.error('deleteFavoriteProduct error: ', error);
+
+        rep.status(500).send({
+            message: 'internal server error',
+        });
+    }
+}

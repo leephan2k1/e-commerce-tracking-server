@@ -1,4 +1,7 @@
-import { saveFavoriteProduct } from '../controllers/user.controller.js';
+import {
+    saveFavoriteProduct,
+    deleteFavoriteProduct,
+} from '../controllers/user.controller.js';
 import { validateUserId } from '../middlewares/validateUser.js';
 
 const productRoutes = [
@@ -21,6 +24,22 @@ const productRoutes = [
         },
         preHandler: [validateUserId],
         handler: saveFavoriteProduct,
+    },
+
+    {
+        url: '/users/:userId/favorite',
+        method: 'DELETE',
+        schema: {
+            body: {
+                type: 'object',
+                required: ['link'],
+                properties: {
+                    link: { type: 'string' },
+                },
+            },
+        },
+        preHandler: [validateUserId],
+        handler: deleteFavoriteProduct,
     },
 ];
 
