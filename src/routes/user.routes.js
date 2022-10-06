@@ -2,6 +2,7 @@ import {
     saveFavoriteProduct,
     deleteFavoriteProduct,
     getFavoriteInfo,
+    getDetailFavoritesInfo,
 } from '../controllers/user.controller.js';
 import { validateUserId } from '../middlewares/validateUser.js';
 
@@ -20,6 +21,13 @@ const productRoutes = [
         },
         preHandler: [validateUserId],
         handler: getFavoriteInfo,
+    },
+
+    {
+        url: '/users/:userId/favorite',
+        method: 'GET',
+        preHandler: [validateUserId],
+        handler: getDetailFavoritesInfo,
     },
 
     {

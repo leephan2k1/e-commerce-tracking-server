@@ -37,6 +37,30 @@ export async function getFavoriteInfo(req, rep) {
     }
 }
 
+export async function getDetailFavoritesInfo(req, rep) {
+    try {
+        const { userId } = req.params;
+
+        const userWithFvProducts = await User.findById(userId, {
+            name: 0,
+            email: 0,
+            image: 0,
+            emailVerified: 0,
+        }).populate('favorite_products');
+
+        rep.status(200).send({
+            status: 'success',
+            user: userWithFvProducts,
+        });
+    } catch (error) {
+        console.error('getDetailFavoritesInfo error: ', error);
+
+        rep.status(500).send({
+            message: 'internal server error',
+        });
+    }
+}
+
 export async function saveFavoriteProduct(req, rep) {
     try {
         const { userId } = req.params;
@@ -68,6 +92,17 @@ export async function deleteFavoriteProduct(req, rep) {
     try {
         const { userId } = req.params;
         const { link } = req.body;
+
+        if (link === 'remove-all') {
+            await User.updateOne(
+                { _id: userId },
+                { $set: { favorite_products: [] } },
+            );
+
+            return rep.status(200).send({
+                status: 'success',
+            });
+        }
 
         const product = await Product.findOne({ link });
 
