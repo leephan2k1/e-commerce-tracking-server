@@ -1,4 +1,7 @@
-import { productSearch } from '../controllers/product.controller.js';
+import {
+    productSearch,
+    getProductVotes,
+} from '../controllers/product.controller.js';
 
 const productRoutes = [
     {
@@ -14,6 +17,12 @@ const productRoutes = [
             },
         },
         handler: productSearch,
+    },
+
+    {
+        url: '/products/votes',
+        method: 'GET',
+        handler: getProductVotes,
     },
 ];
 

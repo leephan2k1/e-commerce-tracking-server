@@ -1,12 +1,13 @@
 import { search as lazadaSearch } from '../models/Lazada.model.js';
 import {
-    search as shopeeSearch,
     getFlashSale as shopeeGetFlashSale,
+    search as shopeeSearch,
 } from '../models/Shopee.model.js';
 import {
     getFlashSale as tikiGetFlashSale,
     search as tikiSearch,
 } from '../models/Tiki.model.js';
+import Product from '../models/Product.model.js';
 
 export async function productSearch(req, rep) {
     try {
@@ -238,9 +239,42 @@ export async function productSearch(req, rep) {
     } catch (error) {
         console.error('SEARCH ERROR:: ', error);
 
-        rep.status(400).send({
+        rep.status(500).send({
             status: 'error',
-            message: error,
+        });
+    }
+}
+
+export async function getProductVotes(req, rep) {
+    try {
+        const { link } = req.query;
+
+        if (!link) {
+            return rep.status(404).send({
+                status: 'error',
+                message: 'link not found',
+            });
+        }
+
+        const product = await Product.findOne({ link });
+
+        if (!product) {
+            return rep.status(404).send({
+                status: 'error',
+                message: 'product not found',
+            });
+        }
+
+        rep.status(200).send({
+            status: 'success',
+            upVotes: product?.up_votes,
+            downVotes: product?.down_votes,
+        });
+    } catch (error) {
+        console.error('getProductVotes ERROR:: ', error);
+
+        rep.status(500).send({
+            status: 'error',
         });
     }
 }
