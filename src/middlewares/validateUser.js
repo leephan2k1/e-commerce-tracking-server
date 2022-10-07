@@ -1,7 +1,10 @@
 import User from '../models/User.model.js';
 
 export async function validateUserId(req, rep, next) {
-    const { userId } = req.params;
+    const { userId: userIdPr } = req.params;
+    const { userId: userIdBd } = req.body;
+
+    const userId = userIdPr || userIdBd;
 
     if (!String(userId).match(/^[0-9a-fA-F]{24}$/)) {
         return rep.status(403).send({
