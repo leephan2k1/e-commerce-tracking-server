@@ -18,7 +18,8 @@ const productSchema = {
     price: { type: String, require: true },
     totalSales: { type: String },
 
-    votes: { type: Number },
+    up_votes: [{ type: Schema.Types.ObjectId }],
+    down_votes: [{ type: Schema.Types.ObjectId }],
     priceBeforeDiscount: { type: Number },
     discountPercent: { type: Number },
     qtyRemainPercent: { type: Number },
