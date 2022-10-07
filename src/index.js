@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import { PORT } from './configs/index.js';
 import routes from './routes/index.js';
 import helmet from '@fastify/helmet';
+import { productBodySchema } from './schema/product.schema.js';
 
 const fastify = Fastify();
 
@@ -11,6 +12,8 @@ fastify.register(routes, { prefix: '/api/v1' });
 fastify.register(cors);
 
 fastify.register(helmet);
+
+fastify.addSchema(productBodySchema);
 
 (async function () {
     try {
