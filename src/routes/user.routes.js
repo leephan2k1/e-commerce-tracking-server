@@ -3,6 +3,8 @@ import {
     deleteFavoriteProduct,
     getFavoriteInfo,
     getDetailFavoritesInfo,
+    handleVoteProduct,
+    handleRemoveVoteProduct,
 } from '../controllers/user.controller.js';
 import { validateUserId } from '../middlewares/validateUser.js';
 
@@ -24,9 +26,34 @@ const productRoutes = [
     },
 
     {
+        url: '/users/:userId/votes',
+        method: 'POST',
+        schema: {
+            body: { $ref: 'productBodySchema#' },
+            querystring: {
+                voteType: { type: 'string' },
+            },
+        },
+        preHandler: [validateUserId],
+        handler: handleVoteProduct,
+    },
+
+    {
+        url: '/users/:userId/votes',
+        method: 'DELETE',
+        schema: {
+            body: { $ref: 'productBodySchema#' },
+            querystring: {
+                voteType: { type: 'string' },
+            },
+        },
+        preHandler: [validateUserId],
+        handler: handleRemoveVoteProduct,
+    },
+
+    {
         url: '/users/:userId/favorite',
         method: 'GET',
-        preHandler: [validateUserId],
         handler: getDetailFavoritesInfo,
     },
 
@@ -34,18 +61,7 @@ const productRoutes = [
         url: '/users/:userId/favorite',
         method: 'POST',
         schema: {
-            body: {
-                type: 'object',
-                required: ['name', 'link', 'img', 'price', 'market'],
-                properties: {
-                    name: { type: 'string' },
-                    link: { type: 'string' },
-                    market: { type: 'string' },
-                    img: { type: 'string' },
-                    price: { type: 'string' },
-                    totalSales: { type: 'string' },
-                },
-            },
+            body: { $ref: 'productBodySchema#' },
         },
         preHandler: [validateUserId],
         handler: saveFavoriteProduct,

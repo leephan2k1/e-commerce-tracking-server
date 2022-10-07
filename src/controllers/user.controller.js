@@ -129,3 +129,105 @@ export async function deleteFavoriteProduct(req, rep) {
         });
     }
 }
+
+export async function handleVoteProduct(req, rep) {
+    try {
+        const { userId } = req.params;
+        const { voteType } = req.query;
+        const { name, link, market, img, price, totalSales } = req.body;
+
+        if (!voteType) {
+            return rep.status(400).send({
+                status: 'error',
+                message: `voteType query needs to be provide, for ex: 'up' or 'down'`,
+            });
+        }
+
+        const product = await Product.findOneAndUpdate(
+            { link },
+            {
+                $set: {
+                    name,
+                    link,
+                    market,
+                    img,
+                    price,
+                    totalSales,
+                },
+            },
+            {
+                upsert: true,
+            },
+        );
+
+        if (voteType === 'up') {
+            await product.updateOne({
+                $addToSet: { up_votes: userId },
+            });
+        } else {
+            await product.updateOne({
+                $addToSet: { down_votes: userId },
+            });
+        }
+
+        rep.status(201).send({
+            status: 'success',
+        });
+    } catch (error) {
+        console.error('handleProductSearch ERROR:: ', error);
+
+        rep.status(500).send({
+            status: 'error',
+        });
+    }
+}
+
+export async function handleRemoveVoteProduct(req, rep) {
+    try {
+        const { userId } = req.params;
+        const { voteType } = req.query;
+        const { name, link, market, img, price, totalSales } = req.body;
+
+        if (!voteType) {
+            return rep.status(400).send({
+                status: 'error',
+                message: `voteType query needs to be provide, for ex: 'up' or 'down'`,
+            });
+        }
+
+        const product = await Product.findOneAndUpdate(
+            { link },
+            {
+                $set: {
+                    name,
+                    link,
+                    market,
+                    img,
+                    price,
+                    totalSales,
+                },
+            },
+            {
+                upsert: true,
+            },
+        );
+
+        if (voteType === 'up') {
+            await product.updateOne({ $pull: { up_votes: { $in: [userId] } } });
+        } else {
+            await product.updateOne({
+                $pull: { down_votes: { $in: [userId] } },
+            });
+        }
+
+        rep.status(201).send({
+            status: 'success',
+        });
+    } catch (error) {
+        console.error('handleRemoveVoteProduct ERROR:: ', error);
+
+        rep.status(500).send({
+            status: 'error',
+        });
+    }
+}
