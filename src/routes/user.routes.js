@@ -5,10 +5,17 @@ import {
     getDetailFavoritesInfo,
     handleVoteProduct,
     handleRemoveVoteProduct,
+    handleSubscribeToNotifyProduct,
+    getInfoSubscriber,
+    handleDeleteSubscriber,
 } from '../controllers/user.controller.js';
 import { validateUserId } from '../middlewares/validateUser.js';
+import {
+    validateSubscribePattern,
+    validateProductLink,
+} from '../middlewares/validateSubscribe.js';
 
-const productRoutes = [
+const userRoutes = [
     {
         url: '/users/:userId/get-favorite',
         method: 'POST',
@@ -23,6 +30,40 @@ const productRoutes = [
         },
         preHandler: [validateUserId],
         handler: getFavoriteInfo,
+    },
+
+    {
+        url: '/users/:userId/subscribe',
+        method: 'GET',
+        schema: {
+            querystring: {
+                productLink: { type: 'string' },
+            },
+        },
+        preHandler: [validateUserId, validateProductLink],
+        handler: getInfoSubscriber,
+    },
+
+    {
+        url: '/users/:userId/subscribe',
+        method: 'DELETE',
+        schema: {
+            querystring: {
+                productLink: { type: 'string' },
+            },
+        },
+        preHandler: [validateUserId, validateProductLink],
+        handler: handleDeleteSubscriber,
+    },
+
+    {
+        url: '/users/:userId/subscribe',
+        method: 'POST',
+        schema: {
+            body: { $ref: 'subscribeBodySchema#' },
+        },
+        preHandler: [validateUserId, validateSubscribePattern],
+        handler: handleSubscribeToNotifyProduct,
     },
 
     {
@@ -84,4 +125,4 @@ const productRoutes = [
     },
 ];
 
-export default productRoutes;
+export default userRoutes;

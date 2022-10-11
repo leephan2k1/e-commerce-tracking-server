@@ -1,5 +1,6 @@
 import Product from '../models/Product.model.js';
 import User from '../models/User.model.js';
+import Subscriber from '../models/Subscriber.model.js';
 
 export async function getFavoriteInfo(req, rep) {
     try {
@@ -225,6 +226,116 @@ export async function handleRemoveVoteProduct(req, rep) {
         });
     } catch (error) {
         console.error('handleRemoveVoteProduct ERROR:: ', error);
+
+        rep.status(500).send({
+            status: 'error',
+        });
+    }
+}
+
+export async function handleSubscribeToNotifyProduct(req, rep) {
+    try {
+        const { userId } = req.params;
+
+        const {
+            notifyChannel,
+            priceCondition,
+            price,
+            link,
+            name,
+            market,
+            img,
+            totalSales,
+        } = req.body;
+
+        let subscriber = await Subscriber.findOne({
+            userId,
+            productLink: link,
+        });
+
+        if (!subscriber) {
+            subscriber = await Subscriber.create({
+                userId,
+                notifyChannel,
+                productLink: link,
+                priceCondition,
+                priceAtSubscribe: price,
+            });
+        }
+
+        // save to product's subscribers list
+        const product = await Product.findOneAndUpdate(
+            { link },
+            { $set: { link, name, market, img, totalSales, price } },
+            { upsert: true },
+        );
+        await product.updateOne({
+            $addToSet: { subscribers: subscriber?._id },
+        });
+
+        return rep.status(201).send({
+            status: 'success',
+            data: req.body,
+        });
+    } catch (error) {
+        console.error('handleSubscribeToNotifyProduct ERROR:: ', error);
+
+        return rep.status(500).send({
+            status: 'error',
+        });
+    }
+}
+
+export async function handleDeleteSubscriber(req, rep) {
+    try {
+        const { productLink } = req.query;
+        const { userId } = req.params;
+
+        const subscriber = await Subscriber.findOne({ userId, productLink });
+
+        if (!subscriber) {
+            return rep.status(400).send({
+                status: 'error',
+                message: `${userId} has not subscribes ${productLink} yet`,
+            });
+        }
+
+        const product = await Product.findOne({ link: productLink });
+
+        if (!product) {
+            return rep.status(400).send({
+                status: 'error',
+                message: `${productLink} not exist`,
+            });
+        }
+
+        // remove n.n relationship:
+        await product.update({ $pull: { subscribers: subscriber._id } });
+        await subscriber?.remove();
+
+        rep.status(200).send({
+            status: 'success',
+            message: `${userId} has unsubscribed ${productLink} successfully`,
+        });
+    } catch (error) {
+        console.error('handleDeleteSubscriber ERROR:: ', error);
+
+        rep.status(500).send({
+            status: 'error',
+        });
+    }
+}
+
+export async function getInfoSubscriber(req, rep) {
+    try {
+        const { productLink } = req.query;
+        const { userId } = req.params;
+
+        const subscriber = await Subscriber.findOne({ userId, productLink });
+
+        rep.status(200).send({ status: 'success', isSubscribed: !!subscriber });
+    } catch (error) {
+        console.error('getInfoSubscriber ERROR:: ', error);
 
         rep.status(500).send({
             status: 'error',
