@@ -3,21 +3,31 @@ import cors from '@fastify/cors';
 import { PORT } from './configs/index.js';
 import routes from './routes/index.js';
 import helmet from '@fastify/helmet';
-import { productBodySchema } from './schema/product.schema.js';
+import { bodySchema } from './schema/index.js';
+import FastifyWs from 'fastify-socket.io';
+import tasks from './services/cron.service.js';
+import socketRoute from './routes/socket.routes.js';
 
 const fastify = Fastify();
-
-fastify.register(routes, { prefix: '/api/v1' });
 
 fastify.register(cors);
 
 fastify.register(helmet);
 
-fastify.addSchema(productBodySchema);
+fastify.register(FastifyWs, { cors: { origin: '*' } });
+
+fastify.register(routes, { prefix: '/api/v1' });
+
+bodySchema.forEach((schema) => fastify.addSchema(schema));
 
 (async function () {
     try {
         await fastify.ready();
+
+        // run cron-job task:
+        tasks.forEach((task) => task.start());
+
+        socketRoute(fastify);
 
         const address = await fastify.listen({ port: PORT, host: '0.0.0.0' });
         // eslint-disable-next-line no-console
