@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { TIKI_URL } from '../configs/index.js';
-import { handlePriceNumber } from '../utils/index.js';
+import { handlePriceNumber, getAxiosClient } from '../utils/index.js';
+import { MARKET_MAPPING } from '../constants/index.js';
+
+const axiosClient = getAxiosClient(TIKI_URL, TIKI_URL, TIKI_URL + '/api/v2');
 
 export async function search(keyword, pageNumber, sort) {
     try {
@@ -106,6 +109,49 @@ export async function getFlashSale(page, limit) {
 
         return null;
     } catch (error) {
+        return null;
+    }
+}
+
+export async function getProductDetails(url) {
+    const lastStr = String(url.split('-').pop());
+    const id = lastStr.slice(1, lastStr.indexOf('.'));
+
+    try {
+        const { data } = await axiosClient.get(`/products/${id}?platform=web`);
+
+        if (!data) return null;
+
+        const {
+            name,
+            description,
+            images,
+            price,
+            original_price,
+            all_time_quantity_sold,
+            brand,
+            id: objId,
+            current_seller,
+        } = data;
+
+        return {
+            name,
+            description: description ? description : '',
+            link: `${MARKET_MAPPING['tiki']}/${url}`,
+            images: images.map((img) => img?.medium_url),
+            price: handlePriceNumber(price),
+            priceBeforeDiscount:
+                original_price !== price
+                    ? handlePriceNumber(original_price)
+                    : null,
+            totalSales: all_time_quantity_sold ? all_time_quantity_sold : '0',
+            brand: brand?.name ? brand?.name : '',
+            market: 'tiki',
+            product_base_id: `3__${objId}__${current_seller?.product_id}`,
+        };
+    } catch (error) {
+        console.error('TIKI GET DETAILS ERROR:: ', error);
+
         return null;
     }
 }

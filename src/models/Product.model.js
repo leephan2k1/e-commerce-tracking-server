@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
 import { mongoDbRemoteClient } from '../configs/index.js';
+import { getProductDetails as tikiGetProductDetails } from '../models/Tiki.model.js';
+import { getProductDetails as bcGetProductDetails } from '../models/Bc.model.js';
 
 const productSchema = {
     name: { type: String, trim: true, require: true },
@@ -20,6 +22,8 @@ const productSchema = {
 
     up_votes: [{ type: Schema.Types.ObjectId }],
     down_votes: [{ type: Schema.Types.ObjectId }],
+    subscribers: [{ type: Schema.Types.ObjectId, ref: 'subscribers' }],
+
     priceBeforeDiscount: { type: Number },
     discountPercent: { type: Number },
     qtyRemainPercent: { type: Number },
@@ -28,3 +32,11 @@ const productSchema = {
 const ProductSchema = new Schema(productSchema);
 
 export default mongoDbRemoteClient.model('products', ProductSchema);
+
+export async function getProductDetails(market, url) {
+    if (market === 'tiki') {
+        return await tikiGetProductDetails(url);
+    }
+
+    return await bcGetProductDetails(market, url);
+}
