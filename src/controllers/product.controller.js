@@ -10,6 +10,7 @@ import {
 } from '../models/Tiki.model.js';
 import { handleSubPathMarket, checkPriceCondition } from '../utils/index.js';
 import { webPushNotify } from '../services/webPush.service.js';
+import fastify from '../index.js';
 
 export async function productSearch(req, rep) {
     try {
@@ -232,13 +233,21 @@ export async function notifyPrice(req, rep) {
 
                         const shouldBeNotify = checkPriceCondition(
                             priceNumber,
-                            subscriber.priceCondition,
+                            subscriber.priceAtSubscribe,
                             subscriber.priceCondition,
                         );
 
                         if (!shouldBeNotify) {
                             return;
                         }
+
+                        // socket notify (default)
+                        // eslint-disable-next-line node/no-unsupported-features/es-builtins
+                        subscriber.userId?.socketIds?.map((socketId) => {
+                            fastify.io
+                                .to(socketId)
+                                .emit('productNotifications', prodInfo);
+                        });
 
                         // webPush notify:
                         if (subscriber.notifyChannel?.includes('browser')) {
@@ -257,6 +266,6 @@ export async function notifyPrice(req, rep) {
 
         rep.status(200).send({ data: products });
     } catch (error) {
-        rep.status(200).send({ data: 'hi' });
+        rep.status(500).send({ status: 'error' });
     }
 }
