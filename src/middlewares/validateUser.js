@@ -1,8 +1,8 @@
 import User from '../models/User.model.js';
 
-export async function validateUserId(req, rep, next) {
-    const { userId: userIdPr } = req.params;
-    const { userId: userIdBd } = req.body;
+export async function validateUserId(req, rep) {
+    const userIdPr = req.params?.userId;
+    const userIdBd = req.body?.userId;
 
     const userId = userIdPr || userIdBd;
 
@@ -21,6 +21,4 @@ export async function validateUserId(req, rep, next) {
             message: `${userId} not in database`,
         });
     }
-
-    next();
 }
