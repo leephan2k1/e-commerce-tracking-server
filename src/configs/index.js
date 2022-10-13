@@ -10,6 +10,12 @@ export const LAZADA_URL = 'https://www.lazada.vn';
 export const BC_API = process.env.BC_API_ENDPOINT;
 export const BC_URL = process.env.BC_URL;
 
+// web push configs:
+export const publicVapidKey = process.env.PUBLIC_VAPID_KEY;
+export const privateVapidKey = process.env.SECRET_VAPID_KEY;
+
+export const WEB_URL = process.env.WEB_URL || 'http://localhost:3000';
+
 const environment = process.env.NODE_ENV || 'development';
 const MONGODB_URI = process.env.MONGODB_URI;
 
