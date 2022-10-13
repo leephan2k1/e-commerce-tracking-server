@@ -10,11 +10,16 @@ export const LAZADA_URL = 'https://www.lazada.vn';
 export const BC_API = process.env.BC_API_ENDPOINT;
 export const BC_URL = process.env.BC_URL;
 
+// nodemailer config
+export const nodemailerConfig = process.env.NODEMAILER_CONFIG
+    ? JSON.parse(process.env.NODEMAILER_CONFIG)
+    : {};
+
 // web push configs:
 export const publicVapidKey = process.env.PUBLIC_VAPID_KEY;
 export const privateVapidKey = process.env.SECRET_VAPID_KEY;
 
-export const WEB_URL = process.env.WEB_URL || 'http://localhost:3000';
+export const WEB_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 export const SERVER_DOMAIN =
     process.env.SERVER_DOMAIN || 'http://localhost:5555';
 
