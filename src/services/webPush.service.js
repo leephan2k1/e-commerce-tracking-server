@@ -13,7 +13,7 @@ export async function webPushNotify(identifications, product) {
                         keys: identification.keys,
                     },
                     JSON.stringify({
-                        title: `${product?.name} đã có giá mới`,
+                        title: `ĐÃ CÓ GIÁ MỚI CỦA: ${product?.name}`,
                         body: `${product?.price} là giá hiện tại`,
                         badge: 'https://i.ibb.co/XjGVZ3S/logo-1.png',
                         icon: 'https://i.ibb.co/XjGVZ3S/logo-1.png',
