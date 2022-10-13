@@ -10,7 +10,9 @@ import {
 } from '../models/Tiki.model.js';
 import { handleSubPathMarket, checkPriceCondition } from '../utils/index.js';
 import { webPushNotify } from '../services/webPush.service.js';
+import { sendMail } from '../services/mail.service.js';
 import fastify from '../index.js';
+import { WEB_URL } from '../configs/index.js';
 
 export async function productSearch(req, rep) {
     try {
@@ -255,6 +257,32 @@ export async function notifyPrice(req, rep) {
                                 subscriber.userId?.identifications,
                                 prodInfo,
                             );
+                        }
+
+                        const clientProductURL = `${WEB_URL}/products/${
+                            prodInfo?.market
+                        }/${handleSubPathMarket(
+                            prodInfo?.market,
+                            prodInfo?.link,
+                        )}`;
+
+                        // email notify:
+                        if (subscriber.notifyChannel?.includes('email')) {
+                            await sendMail({
+                                to: subscriber.userId?.email,
+                                subject: 'Thông báo giá mới',
+                                templateVars: {
+                                    realCostLogo:
+                                        'https://i.ibb.co/XjGVZ3S/logo-1.png',
+                                    productImg: `${
+                                        (prodInfo.images?.length &&
+                                            prodInfo?.images[0]) ||
+                                        prodInfo?.images[1]
+                                    }`,
+                                    productDesc: `Sản phẩm bạn theo dõi ${prodInfo?.name} đã có giá mới: ${prodInfo?.price}, chọn "Xem chi tiết" bên dưới hoặc vào link ${clientProductURL} để xem!`,
+                                    productLink: clientProductURL,
+                                },
+                            });
                         }
                     }),
                 );
