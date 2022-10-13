@@ -259,7 +259,9 @@ export async function handleSubscribeToNotifyProduct(req, rep) {
                 notifyChannel,
                 productLink: link,
                 priceCondition,
-                priceAtSubscribe: price,
+                priceAtSubscribe: Number(
+                    price.replace('đ', '').replace('.', ''),
+                ),
             });
         }
 

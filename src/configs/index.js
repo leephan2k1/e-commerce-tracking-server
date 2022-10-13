@@ -15,6 +15,8 @@ export const publicVapidKey = process.env.PUBLIC_VAPID_KEY;
 export const privateVapidKey = process.env.SECRET_VAPID_KEY;
 
 export const WEB_URL = process.env.WEB_URL || 'http://localhost:3000';
+export const SERVER_DOMAIN =
+    process.env.SERVER_DOMAIN || 'http://localhost:5555';
 
 const environment = process.env.NODE_ENV || 'development';
 const MONGODB_URI = process.env.MONGODB_URI;
