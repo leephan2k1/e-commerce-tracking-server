@@ -1,23 +1,6 @@
-// this approach taken from https://stackoverflow.com/questions/51529332/puppeteer-scroll-down-until-you-cant-anymore
-
-export async function autoScroll(page) {
-    await page.evaluate(async () => {
-        await new Promise((resolve, reject) => {
-            let totalHeight = 0;
-            const distance = 100;
-            const timer = setInterval(() => {
-                const scrollHeight = document.body.scrollHeight;
-                window.scrollBy(0, distance);
-                totalHeight += distance;
-
-                if (totalHeight >= scrollHeight - window.innerHeight) {
-                    clearInterval(timer);
-                    resolve();
-                }
-            }, 100);
-        });
-    });
-}
+import axios from 'axios';
+import qs from 'fast-querystring';
+import { MARKET_MAPPING } from '../constants/index.js';
 
 export function unshiftProtocol(url) {
     return ['http', 'https'].some((protocol) => url.includes(protocol))
@@ -35,4 +18,34 @@ export function handlePriceShopee(priceNumber) {
     }
 
     return '';
+}
+
+export function handleSubPathMarket(market, url) {
+    if (market !== 'lazada') {
+        return url?.replace(`${MARKET_MAPPING[market]}/`, '');
+    }
+
+    return url?.replace(`${MARKET_MAPPING[market]}/products/`, '');
+}
+
+export function getAxiosClient(referer, origin, baseURL) {
+    return axios.create({
+        baseURL,
+        paramsSerializer: (params) => qs.stringify(params),
+        headers: {
+            referer,
+            origin,
+        },
+    });
+}
+
+export function checkPriceCondition(newPrice, currentPrice, condition) {
+    switch (condition) {
+        case 'any':
+            return newPrice !== currentPrice;
+        case 'gt':
+            return newPrice > currentPrice;
+        case 'lt':
+            return newPrice < currentPrice;
+    }
 }
