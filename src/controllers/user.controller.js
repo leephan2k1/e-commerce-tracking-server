@@ -263,17 +263,31 @@ export async function handleSubscribeToNotifyProduct(req, rep) {
                     price.replace('đ', '').replace('.', ''),
                 ),
             });
+        } else {
+            await subscriber.updateOne({
+                userId,
+                notifyChannel,
+                productLink: link,
+                priceCondition,
+                priceAtSubscribe: Number(
+                    price.replace('đ', '').replace('.', ''),
+                ),
+            });
         }
 
         // save to product's subscribers list
-        const product = await Product.findOneAndUpdate(
+        await Product.updateOne(
             { link },
             { $set: { link, name, market, img, totalSales, price } },
             { upsert: true },
         );
-        await product.updateOne({
-            $addToSet: { subscribers: subscriber?._id },
-        });
+
+        await Product.updateOne(
+            { link },
+            {
+                $addToSet: { subscribers: subscriber?._id },
+            },
+        );
 
         return rep.status(201).send({
             status: 'success',
