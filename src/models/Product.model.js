@@ -29,7 +29,7 @@ const productSchema = {
     qtyRemainPercent: { type: Number },
 };
 
-const ProductSchema = new Schema(productSchema);
+const ProductSchema = new Schema(productSchema, { timestamps: true });
 
 export default mongoDbRemoteClient.model('products', ProductSchema);
 
