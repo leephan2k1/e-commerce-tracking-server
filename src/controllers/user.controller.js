@@ -1,6 +1,70 @@
 import Product from '../models/Product.model.js';
 import User from '../models/User.model.js';
 import Subscriber from '../models/Subscriber.model.js';
+import Notification from '../models/Notification.model.js';
+
+export async function getNotifications(req, rep) {
+    try {
+        const { userId } = req.params;
+
+        const notifications = await Notification.find({
+            user: userId,
+        }).populate('product');
+
+        return rep.status(200).send({
+            status: 'success',
+            notifications,
+        });
+    } catch (error) {
+        console.error('getNotifications error: ', error);
+
+        rep.status(500).send({
+            message: 'internal server error',
+        });
+    }
+}
+
+export async function deleteNotification(req, rep) {
+    try {
+        const { userId } = req.params;
+        const { productLink } = req.query;
+
+        if (!productLink) {
+            return rep.status(400).send({
+                status: 'error',
+                message: 'productLink query should be provide',
+            });
+        }
+
+        const user = await Notification.findOne({
+            user: userId,
+            productLink,
+        });
+
+        if (!user) {
+            return rep.status(404).send({
+                status: 'error',
+                message: 'The user does not own this notification yet',
+            });
+        }
+
+        if (!user?.seen) {
+            await user.updateOne({ $set: { seen: Date.now() } });
+        }
+
+        rep.status(200).send({
+            status: 'success',
+            message: 'notification will be deleted in 2 days',
+            user,
+        });
+    } catch (error) {
+        console.error('deleteNotification error: ', error);
+
+        rep.status(500).send({
+            message: 'internal server error',
+        });
+    }
+}
 
 export async function getFavoriteInfo(req, rep) {
     try {

@@ -8,6 +8,8 @@ import {
     handleSubscribeToNotifyProduct,
     getInfoSubscriber,
     handleDeleteSubscriber,
+    getNotifications,
+    deleteNotification,
 } from '../controllers/user.controller.js';
 import { validateUserId } from '../middlewares/validateUser.js';
 import {
@@ -30,6 +32,25 @@ const userRoutes = [
         },
         preHandler: [validateUserId],
         handler: getFavoriteInfo,
+    },
+
+    {
+        url: '/users/:userId/notifications',
+        method: 'GET',
+        preHandler: [validateUserId],
+        handler: getNotifications,
+    },
+
+    {
+        url: '/users/:userId/notifications',
+        method: 'DELETE',
+        schema: {
+            querystring: {
+                productLink: { type: 'string' },
+            },
+        },
+        preHandler: [validateUserId],
+        handler: deleteNotification,
     },
 
     {
