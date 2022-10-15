@@ -1,5 +1,6 @@
 import { search as lazadaSearch } from '../models/Lazada.model.js';
 import Product, { getProductDetails } from '../models/Product.model.js';
+import Subscriber from '../models/Subscriber.model.js';
 import {
     getFlashSale as shopeeGetFlashSale,
     search as shopeeSearch,
@@ -243,13 +244,20 @@ export async function notifyPrice(req, rep) {
                             return;
                         }
 
-                        // socket notify (default)
+                        // emit socket notify (default)
                         // eslint-disable-next-line node/no-unsupported-features/es-builtins
                         subscriber.userId?.socketIds?.map((socketId) => {
                             fastify.io
                                 .to(socketId)
                                 .emit('productNotifications', prodInfo);
                         });
+
+                        const clientProductURL = `${WEB_URL}/products/${
+                            prodInfo?.market
+                        }/${handleSubPathMarket(
+                            prodInfo?.market,
+                            prodInfo?.link,
+                        )}`;
 
                         // webPush notify:
                         if (subscriber.notifyChannel?.includes('browser')) {
@@ -259,14 +267,7 @@ export async function notifyPrice(req, rep) {
                             );
                         }
 
-                        const clientProductURL = `${WEB_URL}/products/${
-                            prodInfo?.market
-                        }/${handleSubPathMarket(
-                            prodInfo?.market,
-                            prodInfo?.link,
-                        )}`;
-
-                        // email notify:
+                        // send email notify:
                         if (subscriber.notifyChannel?.includes('email')) {
                             await sendMail({
                                 to: subscriber.userId?.email,
@@ -284,11 +285,13 @@ export async function notifyPrice(req, rep) {
                                 },
                             });
                         }
+
+                        // set a new price:
+                        await Subscriber.findByIdAndUpdate(subscriber?._id, {
+                            $set: { priceAtSubscribe: priceNumber },
+                        });
                     }),
                 );
-
-                // notify:
-                // console.log('prod Info:: ', prodInfo);
             }),
         );
 
