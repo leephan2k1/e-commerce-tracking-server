@@ -5,6 +5,7 @@ import {
     getFlashSale as shopeeGetFlashSale,
     search as shopeeSearch,
 } from '../models/Shopee.model.js';
+import Notification from '../models/Notification.model.js';
 import {
     getFlashSale as tikiGetFlashSale,
     search as tikiSearch,
@@ -224,6 +225,8 @@ export async function notifyPrice(req, rep) {
                     purePath,
                 );
 
+                if (!prodInfo) throw new Error();
+
                 // eslint-disable-next-line node/no-unsupported-features/es-builtins
                 await Promise.allSettled(
                     product.subscribers.map(async (subscriber) => {
@@ -290,7 +293,30 @@ export async function notifyPrice(req, rep) {
                         await Subscriber.findByIdAndUpdate(subscriber?._id, {
                             $set: { priceAtSubscribe: priceNumber },
                         });
+
+                        // set notification
+                        await Notification.updateOne(
+                            {
+                                user: subscriber.userId?._id,
+                                productLink: product.link,
+                            },
+                            {
+                                user: subscriber.userId?._id,
+                                product: product._id,
+                                productLink: product.link,
+                            },
+                            { upsert: true },
+                        );
                     }),
+                );
+
+                await Product.updateOne(
+                    { link },
+                    {
+                        $set: {
+                            price: prodInfo.price,
+                        },
+                    },
                 );
             }),
         );
