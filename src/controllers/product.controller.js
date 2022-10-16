@@ -304,6 +304,7 @@ export async function notifyPrice(req, rep) {
                                 user: subscriber.userId?._id,
                                 product: product._id,
                                 productLink: product.link,
+                                $unset: { seen: '' },
                             },
                             { upsert: true },
                         );
