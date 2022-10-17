@@ -7,6 +7,9 @@ export const TIKI_URL = 'https://tiki.vn';
 export const SHOPEE_URL = 'https://shopee.vn';
 export const LAZADA_URL = 'https://www.lazada.vn';
 
+export const TIKI_AF_TOKEN = process.env.TIKI_TOKEN;
+export const TIKI_OWNER_ID = process.env.TIKI_OWNER_ID;
+
 export const BC_API = process.env.BC_API_ENDPOINT;
 export const BC_URL = process.env.BC_URL;
 
