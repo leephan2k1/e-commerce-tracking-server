@@ -277,7 +277,7 @@ export async function getProductVotes(req, rep) {
     }
 }
 
-export async function notifyPrice(req, rep) {
+export async function notifyPrice() {
     try {
         const products = await Product.find({
             subscribers: { $exists: true, $not: { $size: 0 } },
@@ -399,8 +399,8 @@ export async function notifyPrice(req, rep) {
             }),
         );
 
-        rep.status(200).send({ data: products });
+        await logEvents('cron-job.log', 'notify successfully');
     } catch (error) {
-        rep.status(500).send({ status: 'error' });
+        await logEvents('products.log', JSON.stringify(error));
     }
 }

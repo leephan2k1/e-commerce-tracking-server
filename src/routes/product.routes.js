@@ -1,6 +1,7 @@
 import {
-    productSearch,
+    generateProductLink,
     getProductVotes,
+    productSearch,
 } from '../controllers/product.controller.js';
 
 const productRoutes = [
@@ -23,6 +24,18 @@ const productRoutes = [
         url: '/products/votes',
         method: 'GET',
         handler: getProductVotes,
+    },
+
+    {
+        url: '/products/generate-link',
+        method: 'GET',
+        schema: {
+            querystring: {
+                market: { type: 'string' },
+                productLink: { type: 'string' },
+            },
+        },
+        handler: generateProductLink,
     },
 ];
 
