@@ -10,11 +10,88 @@ import {
     getFlashSale as tikiGetFlashSale,
     search as tikiSearch,
 } from '../models/Tiki.model.js';
-import { handleSubPathMarket, checkPriceCondition } from '../utils/index.js';
+import {
+    handleSubPathMarket,
+    checkPriceCondition,
+    logEvents,
+} from '../utils/index.js';
 import { webPushNotify } from '../services/webPush.service.js';
 import { sendMail } from '../services/mail.service.js';
 import fastify from '../index.js';
-import { WEB_URL } from '../configs/index.js';
+import { WEB_URL, TIKI_AF_TOKEN, TIKI_OWNER_ID } from '../configs/index.js';
+import { nanoid } from 'nanoid';
+import axios from 'axios';
+import qs from 'fast-querystring';
+import { format } from 'date-fns';
+
+export async function generateProductLink(req, rep) {
+    const { market, productLink } = req.query;
+    let axiosClient;
+
+    if (market === 'tiki') {
+        axiosClient = axios.create({
+            baseURL: 'https://affiliate.tiki.com.vn/api/v1',
+            paramsSerializer: (params) => qs.stringify(params),
+            headers: {
+                referer: 'https://affiliate.tiki.com.vn/get-link/build-link',
+                origin: 'https://affiliate.tiki.com.vn',
+                authorization: TIKI_AF_TOKEN,
+            },
+        });
+    }
+
+    if (!axiosClient) {
+        return rep.status(400).send({
+            status: 'error',
+            message: 'please provide exact market: tiki, shopee, lazada',
+        });
+    }
+
+    if (!productLink) {
+        return rep.status(400).send({
+            status: 'error',
+            message: 'please provide product link',
+        });
+    }
+
+    try {
+        if (market === 'tiki') {
+            const code = String(nanoid(8)).toUpperCase();
+
+            const { data } = await axiosClient.post(
+                '/universal-campaigns/create',
+                {
+                    code,
+                    name:
+                        'Campaign ' + format(new Date(), 'YYY-MM-dd HH:mm:ss'),
+                    type: 'UNIVERSAL',
+                    tially_links: [
+                        {
+                            partner_name: 'TIKI-AFF',
+                            partner_code: 'TIKIAFF',
+                            original_link: productLink,
+                        },
+                    ],
+                    owner: TIKI_OWNER_ID,
+                },
+            );
+
+            if (!data) throw new Error();
+
+            return rep.status(201).send({
+                status: 'success',
+                productLink: data.data?.tially_links[0].short_link,
+            });
+        }
+
+        rep.status(400).send({
+            status: 'error',
+        });
+    } catch (error) {
+        console.error('error: ', error);
+        await logEvents('products.log', JSON.stringify(error));
+    }
+}
 
 export async function productSearch(req, rep) {
     try {
