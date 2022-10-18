@@ -420,3 +420,32 @@ export async function notifyPrice() {
         await logEvents('products.log', JSON.stringify(error));
     }
 }
+
+export async function getRecentlyVotes(req, rep) {
+    try {
+        const { limit } = req.query;
+
+        const products = await Product.find(
+            {
+                $or: [
+                    { up_votes: { $exists: true, $not: { $size: 0 } } },
+                    { down_votes: { $exists: true, $not: { $size: 0 } } },
+                ],
+            },
+            { updatedAt: 0, _id: 0, __v: 0 },
+        )
+            .sort({ updatedAt: -1 })
+            .limit(limit);
+
+        rep.status(200).send({
+            status: 'success',
+            products,
+        });
+    } catch (error) {
+        console.error('getRecentlyVotes ERROR:: ', error);
+
+        rep.status(500).send({
+            status: 'error',
+        });
+    }
+}

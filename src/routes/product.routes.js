@@ -2,6 +2,7 @@ import {
     generateProductLink,
     getProductVotes,
     productSearch,
+    getRecentlyVotes,
 } from '../controllers/product.controller.js';
 
 const productRoutes = [
@@ -24,6 +25,17 @@ const productRoutes = [
         url: '/products/votes',
         method: 'GET',
         handler: getProductVotes,
+    },
+
+    {
+        url: '/products/recently-vote',
+        method: 'GET',
+        schema: {
+            querystring: {
+                limit: { type: 'number', default: 10 },
+            },
+        },
+        handler: getRecentlyVotes,
     },
 
     {
