@@ -23,10 +23,34 @@ import { nanoid } from 'nanoid';
 import axios from 'axios';
 import qs from 'fast-querystring';
 import { format } from 'date-fns';
+import ShortLink from '../models/ShortLink.model.js';
 
 export async function generateProductLink(req, rep) {
     const { market, productLink } = req.query;
     let axiosClient;
+
+    if (!productLink) {
+        return rep.status(400).send({
+            status: 'error',
+            message: 'please provide product link',
+        });
+    }
+
+    if (market !== 'tiki' && market !== 'shopee' && market !== 'lazada') {
+        return rep.status(400).send({
+            status: 'error',
+            message: 'please provide exact market: tiki, shopee, lazada',
+        });
+    }
+
+    const shortLinkData = await ShortLink.findOne({ productLink });
+
+    if (shortLinkData) {
+        return rep.status(200).send({
+            status: 'success',
+            productLink: shortLinkData.shortLink,
+        });
+    }
 
     if (market === 'tiki') {
         axiosClient = axios.create({
@@ -37,20 +61,6 @@ export async function generateProductLink(req, rep) {
                 origin: 'https://affiliate.tiki.com.vn',
                 authorization: TIKI_AF_TOKEN,
             },
-        });
-    }
-
-    if (!axiosClient) {
-        return rep.status(400).send({
-            status: 'error',
-            message: 'please provide exact market: tiki, shopee, lazada',
-        });
-    }
-
-    if (!productLink) {
-        return rep.status(400).send({
-            status: 'error',
-            message: 'please provide product link',
         });
     }
 
@@ -77,6 +87,12 @@ export async function generateProductLink(req, rep) {
             );
 
             if (!data) throw new Error();
+
+            await ShortLink.create({
+                productLink,
+                shortLink: data.data?.tially_links[0].short_link,
+                market,
+            });
 
             return rep.status(201).send({
                 status: 'success',
