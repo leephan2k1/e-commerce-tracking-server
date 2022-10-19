@@ -421,6 +421,29 @@ export async function notifyPrice() {
     }
 }
 
+export async function cleanupNotifications() {
+    try {
+        const currentTime = new Date(Date.now()).getTime();
+
+        // eslint-disable-next-line node/no-unsupported-features/es-syntax
+        for await (const notification of Notification.find().cursor()) {
+            const { seen } = notification;
+
+            if (seen) {
+                const diff = new Date(currentTime - new Date(seen).getTime());
+
+                if (diff.getUTCDate() >= 2) {
+                    await notification.remove();
+                }
+            }
+        }
+
+        await logEvents('clean-notifications.log', 'success');
+    } catch (error) {
+        await logEvents('clean-notifications.log', JSON.stringify(error));
+    }
+}
+
 export async function getRecentlyVotes(req, rep) {
     try {
         const { limit } = req.query;
