@@ -13,10 +13,27 @@ import FastifyWs from 'fastify-socket.io';
 import tasks from './services/cron.service.js';
 import socketRoute from './routes/socket.routes.js';
 import webPush from 'web-push';
+import fastifySwagger from '@fastify/swagger';
+import fastifySwaggerUI from '@fastify/swagger-ui';
+import swaggerDocs from './swagger.js';
 
 const fastify = Fastify();
 
-fastify.register(cors);
+fastify.register(cors, {
+    origin: ['http://localhost:3000', 'https://realcost.shop'],
+});
+
+fastify.register(fastifySwagger, swaggerDocs);
+
+fastify.register(fastifySwaggerUI, {
+    routePrefix: '/documentation',
+    uiConfig: {
+        docExpansion: 'full',
+        deepLinking: false,
+    },
+    staticCSP: true,
+    transformStaticCSP: (header) => header,
+});
 
 fastify.register(helmet);
 
@@ -31,6 +48,8 @@ webPush.setVapidDetails(SERVER_DOMAIN, publicVapidKey, privateVapidKey);
 (async function () {
     try {
         await fastify.ready();
+
+        fastify.swagger();
 
         // run cron-job task:
         tasks.forEach((task) => task.start());
