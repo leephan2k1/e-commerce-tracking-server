@@ -3,6 +3,7 @@
 | Table contents                                                                                  |
 | ----------------------------------------------------------------------------------------------- |
 | [Tech stack](https://github.com/leephan2k1/e-commerce-tracking-server#tech-stack)               |
+| [ERD Design](https://github.com/leephan2k1/e-commerce-tracking-server#erd-design)               |
 | [Project setup](https://github.com/leephan2k1/e-commerce-tracking-server#project-setup)         |
 | [API Documentation](https://github.com/leephan2k1/e-commerce-tracking-server#api-documentation) |
 
@@ -11,6 +12,10 @@
 -   Fastify
 -   Mongodb
 -   SocketIO
+
+## ERD Design
+
+![erd-design](https://i.ibb.co/MRL3v4D/ERD-9-10-2022-drawio.png)
 
 ## Project setup
 
@@ -55,7 +60,7 @@ BC_URL=https://beecost.vn
 3. Install all dependencies:
 
 ```
-yarn i
+yarn install
 ```
 
 4. Start the server:
@@ -82,7 +87,7 @@ yarn start
 
 ## API Documentation
 
-GET this route to expose Restful API endpoints of Real Cost Server
+After the server is started, GET this route to expose Restful API endpoints of Real Cost Server
 
 ```
 /documentation
