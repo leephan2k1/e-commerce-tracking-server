@@ -225,14 +225,16 @@ export async function handleVoteProduct(req, rep) {
             },
         );
 
-        if (voteType === 'up') {
-            await product.updateOne({
-                $addToSet: { up_votes: userId },
-            });
-        } else {
-            await product.updateOne({
-                $addToSet: { down_votes: userId },
-            });
+        if (product) {
+            if (voteType === 'up') {
+                await product.updateOne({
+                    $addToSet: { up_votes: userId },
+                });
+            } else {
+                await product.updateOne({
+                    $addToSet: { down_votes: userId },
+                });
+            }
         }
 
         rep.status(201).send({
