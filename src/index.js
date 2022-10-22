@@ -28,7 +28,6 @@ fastify.register(fastifySwagger, swaggerDocs);
 fastify.register(fastifySwaggerUI, {
     routePrefix: '/documentation',
     uiConfig: {
-        docExpansion: 'full',
         deepLinking: false,
     },
     staticCSP: true,
