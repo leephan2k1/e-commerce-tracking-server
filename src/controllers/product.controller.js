@@ -142,6 +142,10 @@ export async function generateProductLink(req, rep) {
     } catch (error) {
         console.error('error: ', error);
         await logEvents('products.log', JSON.stringify(error));
+
+        return rep.status(400).send({
+            status: 'error',
+        });
     }
 }
 
