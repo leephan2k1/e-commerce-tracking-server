@@ -18,7 +18,12 @@ import {
 import { webPushNotify } from '../services/webPush.service.js';
 import { sendMail } from '../services/mail.service.js';
 import fastify from '../index.js';
-import { WEB_URL, TIKI_AF_TOKEN, TIKI_OWNER_ID } from '../configs/index.js';
+import {
+    WEB_URL,
+    TIKI_AF_TOKEN,
+    TIKI_OWNER_ID,
+    SP_COOKIE,
+} from '../configs/index.js';
 import { nanoid } from 'nanoid';
 import axios from 'axios';
 import qs from 'fast-querystring';
@@ -64,10 +69,21 @@ export async function generateProductLink(req, rep) {
         });
     }
 
-    try {
-        if (market === 'tiki') {
-            const code = String(nanoid(8)).toUpperCase();
+    if (market === 'shopee') {
+        axiosClient = axios.create({
+            baseURL: 'https://affiliate.shopee.vn/api/v1',
+            paramsSerializer: (params) => qs.stringify(params),
+            headers: {
+                referer: 'https://affiliate.shopee.vn/offer/custom_link',
+                origin: 'https://affiliate.shopee.vn',
+                cookie: SP_COOKIE,
+            },
+        });
+    }
 
+    try {
+        const code = String(nanoid(8)).toUpperCase();
+        if (market === 'tiki') {
             const { data } = await axiosClient.post(
                 '/universal-campaigns/create',
                 {
@@ -97,6 +113,26 @@ export async function generateProductLink(req, rep) {
             return rep.status(201).send({
                 status: 'success',
                 productLink: data.data?.tially_links[0].short_link,
+            });
+        }
+
+        if (market === 'shopee') {
+            const { data } = await axiosClient.post(`/link/gen_by_custom`, {
+                advanced: { sub_id1: code },
+                original_url: productLink,
+            });
+
+            if (!data || !data?.data?.short_link) throw new Error();
+
+            await ShortLink.create({
+                productLink,
+                shortLink: data.data?.short_link,
+                market,
+            });
+
+            return rep.status(201).send({
+                status: 'success',
+                productLink: data.data?.short_link,
             });
         }
 

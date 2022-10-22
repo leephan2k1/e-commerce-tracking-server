@@ -10,6 +10,8 @@ export const LAZADA_URL = 'https://www.lazada.vn';
 export const TIKI_AF_TOKEN = process.env.TIKI_TOKEN;
 export const TIKI_OWNER_ID = process.env.TIKI_OWNER_ID;
 
+export const SP_COOKIE = JSON.parse(process.env.SP_COOKIE)?.cookie;
+
 export const BC_API = process.env.BC_API_ENDPOINT;
 export const BC_URL = process.env.BC_URL;
 
