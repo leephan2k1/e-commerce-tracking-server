@@ -71,9 +71,10 @@ const userRoutes = [
         schema: {
             querystring: {
                 productLink: { type: 'string' },
+                opt: { type: 'string' },
             },
         },
-        preHandler: [validateUserId, validateProductLink],
+        preHandler: [validateUserId],
         handler: handleDeleteSubscriber,
     },
 

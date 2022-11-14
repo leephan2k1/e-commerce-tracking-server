@@ -370,8 +370,33 @@ export async function handleSubscribeToNotifyProduct(req, rep) {
 
 export async function handleDeleteSubscriber(req, rep) {
     try {
-        const { productLink } = req.query;
+        const { productLink, opt } = req.query;
         const { userId } = req.params;
+
+        if (opt === 'removeAll') {
+            const subProds = await Subscriber.find({ userId });
+
+            // eslint-disable-next-line node/no-unsupported-features/es-builtins
+            await Promise.allSettled(
+                subProds.map(async (prod) => {
+                    // eslint-disable-next-line node/no-unsupported-features/es-builtins
+                    await Promise.allSettled([
+                        await Subscriber.findByIdAndDelete(prod._id),
+                        await Product.updateOne(
+                            {
+                                subscribers: { $in: [prod._id] },
+                            },
+                            { $pull: { subscribers: { $in: [prod._id] } } },
+                        ),
+                    ]);
+                }),
+            );
+
+            return rep.status(200).send({
+                status: 'success',
+                message: `${userId} has unsubscribed all products successfully`,
+            });
+        }
 
         const subscriber = await Subscriber.findOne({ userId, productLink });
 
@@ -392,7 +417,9 @@ export async function handleDeleteSubscriber(req, rep) {
         }
 
         // remove n.n relationship:
-        await product.update({ $pull: { subscribers: subscriber._id } });
+        await product.update({
+            $pull: { subscribers: { $in: [subscriber._id] } },
+        });
         await subscriber?.remove();
 
         rep.status(200).send({
