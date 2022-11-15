@@ -125,3 +125,20 @@ describe('GET /products/votes', () => {
         expect(Array.isArray(response.body.upVotes)).toBe(true);
     });
 });
+
+describe('GET /products/recently-vote', () => {
+    test('(get recently voted products) should return 200', async () => {
+        const response = await supertest(baseURL).get(
+            '/products/recently-vote',
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(Array.isArray(response.body.products)).toBe(true);
+
+        if (Array.isArray(response.body.products)) {
+            response.body.products.forEach((prod) => {
+                expect(checkPreviewProductSchema(prod)).toBe(true);
+            });
+        }
+    });
+});
