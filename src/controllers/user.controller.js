@@ -132,9 +132,11 @@ export async function saveFavoriteProduct(req, rep) {
         const { link } = req.body;
 
         // eslint-disable-next-line node/no-unsupported-features/es-builtins
-        const product = await Product.findOneAndUpdate({ link }, req.body, {
-            upsert: true,
-        });
+        let product = await Product.findOne({ link });
+
+        if (!product) product = await Product.create(req.body);
+
+        console.log('product:: ', product);
 
         await User.findByIdAndUpdate(userId, {
             $addToSet: { favorite_products: product?._id },
