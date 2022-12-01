@@ -136,8 +136,6 @@ export async function saveFavoriteProduct(req, rep) {
 
         if (!product) product = await Product.create(req.body);
 
-        console.log('product:: ', product);
-
         await User.findByIdAndUpdate(userId, {
             $addToSet: { favorite_products: product?._id },
         });
