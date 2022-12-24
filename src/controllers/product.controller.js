@@ -455,9 +455,10 @@ export async function notifyPrice() {
             }),
         );
 
-        await logEvents('cron-job.log', 'notify successfully');
+        // await logEvents('cron-job.log', 'notify successfully');
     } catch (error) {
-        await logEvents('products.log', JSON.stringify(error));
+        console.error('notifyPrice error: ', error);
+        // await logEvents('products.log', JSON.stringify(error));
     }
 }
 
@@ -478,9 +479,11 @@ export async function cleanupNotifications() {
             }
         }
 
-        await logEvents('clean-notifications.log', 'success');
+        // await logEvents('clean-notifications.log', 'success');
     } catch (error) {
-        await logEvents('clean-notifications.log', JSON.stringify(error));
+        console.error('cleanupNotifications error: ', error);
+
+        // await logEvents('clean-notifications.log', JSON.stringify(error));
     }
 }
 
